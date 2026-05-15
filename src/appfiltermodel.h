@@ -81,6 +81,10 @@ public:
 
     Q_INVOKABLE void launch(int proxyIndex);
     Q_INVOKABLE void launchByStorageId(const QString &storageId);
+    // Bookkeeping side of launch: prepend to recents (capped), bump
+    // launch count, add to known. Public so tests can exercise it
+    // without triggering KIO::ApplicationLauncherJob.
+    Q_INVOKABLE void recordRecentLaunch(const QString &storageId);
     Q_INVOKABLE QStringList categories() const;
     Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
     Q_INVOKABLE QVariantMap get(int proxyRow) const;

@@ -35,6 +35,18 @@ private slots:
     void nonEmptyCategoriesSkipsHiddenApps();
     void appsByCategoryGroupsMultiCategoryApp();
     void countSignalEmitsOnSourceChange();
+    void markAllKnownPopulatesFromSource();
+    void toggleFavoriteAddsThenRemoves();
+    void hideAppByProxyIndexAddsToList();
+    void hideAppDoesNothingForInvalidIndex();
+    void unhideAppRemovesFromList();
+    void isRecentReflectsList();
+    void hiddenAppsChangedTriggersGroupedSignal();
+    void recordRecentLaunchPrependsAndBumpsCount();
+    void recordRecentLaunchCapsAtMaxRecentApps();
+    void recordRecentLaunchDeduplicatesPriorEntry();
+    void recordRecentLaunchAddsToKnownApps();
+    void recordRecentLaunchIgnoresEmptyId();
 
 private:
     StubAppModel m_source;
@@ -232,6 +244,142 @@ void TestAppFilterModel::countSignalEmitsOnSourceChange()
     });
     QVERIFY(spy.count() >= 1);
     QCOMPARE(m_filter.count(), 1);
+}
+
+void TestAppFilterModel::markAllKnownPopulatesFromSource()
+{
+    m_source.setApps({
+        {QStringLiteral("A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
+        {QStringLiteral("B"), {}, {}, {}, {}, QStringLiteral("b"), {}, {}, {}},
+        {QStringLiteral("C"), {}, {}, {}, {}, QStringLiteral("c"), {}, {}, {}},
+    });
+    QVERIFY(m_filter.knownApps().isEmpty());
+    m_filter.markAllKnown();
+    QStringList known = m_filter.knownApps();
+    known.sort();
+    QCOMPARE(known, (QStringList{
+        QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c")}));
+}
+
+void TestAppFilterModel::toggleFavoriteAddsThenRemoves()
+{
+    QSignalSpy spy(&m_filter, &AppFilterModel::favoriteAppsChanged);
+    m_filter.toggleFavorite(QStringLiteral("kate"));
+    QVERIFY(m_filter.isFavorite(QStringLiteral("kate")));
+    QCOMPARE(spy.count(), 1);
+
+    m_filter.toggleFavorite(QStringLiteral("kate"));
+    QVERIFY(!m_filter.isFavorite(QStringLiteral("kate")));
+    QCOMPARE(spy.count(), 2);
+
+    // Empty id is ignored
+    m_filter.toggleFavorite(QString());
+    QCOMPARE(spy.count(), 2);
+}
+
+void TestAppFilterModel::hideAppByProxyIndexAddsToList()
+{
+    m_source.setApps({
+        {QStringLiteral("A"), {}, {}, {}, {}, QStringLiteral("a"), {}, {}, {}},
+        {QStringLiteral("B"), {}, {}, {}, {}, QStringLiteral("b"), {}, {}, {}},
+    });
+    QSignalSpy spy(&m_filter, &AppFilterModel::hiddenAppsChanged);
+    m_filter.hideApp(0);
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(m_filter.hiddenApps().contains(QStringLiteral("a"))
+            || m_filter.hiddenApps().contains(QStringLiteral("b")));
+    // Re-hiding same row should be a no-op (storageId already hidden,
+    // but the row may now be filtered out, making index invalid).
+    const auto before = m_filter.hiddenApps();
+    m_filter.hideApp(0);
+    QVERIFY(m_filter.hiddenApps().size() <= before.size() + 1);
+}
+
+void TestAppFilterModel::hideAppDoesNothingForInvalidIndex()
+{
+    QSignalSpy spy(&m_filter, &AppFilterModel::hiddenAppsChanged);
+    m_filter.hideApp(99);
+    QCOMPARE(spy.count(), 0);
+    QVERIFY(m_filter.hiddenApps().isEmpty());
+}
+
+void TestAppFilterModel::unhideAppRemovesFromList()
+{
+    m_filter.setHiddenApps({QStringLiteral("a"), QStringLiteral("b")});
+    QSignalSpy spy(&m_filter, &AppFilterModel::hiddenAppsChanged);
+    m_filter.unhideApp(QStringLiteral("a"));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(m_filter.hiddenApps(), QStringList{QStringLiteral("b")});
+
+    // Unknown id is no-op
+    m_filter.unhideApp(QStringLiteral("ghost"));
+    QCOMPARE(spy.count(), 1);
+}
+
+void TestAppFilterModel::isRecentReflectsList()
+{
+    QVERIFY(!m_filter.isRecent(QStringLiteral("x")));
+    m_filter.setRecentApps({QStringLiteral("x"), QStringLiteral("y")});
+    QVERIFY(m_filter.isRecent(QStringLiteral("x")));
+    QVERIFY(!m_filter.isRecent(QStringLiteral("z")));
+}
+
+void TestAppFilterModel::hiddenAppsChangedTriggersGroupedSignal()
+{
+    QSignalSpy spy(&m_filter, &AppFilterModel::groupedByCategoryChanged);
+    m_filter.setHiddenApps({QStringLiteral("a")});
+    QVERIFY(spy.count() >= 1);
+}
+
+void TestAppFilterModel::recordRecentLaunchPrependsAndBumpsCount()
+{
+    QSignalSpy recentSpy(&m_filter, &AppFilterModel::recentAppsChanged);
+    QSignalSpy countSpy(&m_filter, &AppFilterModel::launchCountsChanged);
+
+    m_filter.recordRecentLaunch(QStringLiteral("a"));
+    QCOMPARE(m_filter.recentApps().first(), QStringLiteral("a"));
+    QCOMPARE(m_filter.getLaunchCount(QStringLiteral("a")), 1);
+    QCOMPARE(recentSpy.count(), 1);
+    QCOMPARE(countSpy.count(), 1);
+
+    m_filter.recordRecentLaunch(QStringLiteral("a"));
+    QCOMPARE(m_filter.getLaunchCount(QStringLiteral("a")), 2);
+}
+
+void TestAppFilterModel::recordRecentLaunchCapsAtMaxRecentApps()
+{
+    m_filter.setMaxRecentApps(3);
+    m_filter.recordRecentLaunch(QStringLiteral("a"));
+    m_filter.recordRecentLaunch(QStringLiteral("b"));
+    m_filter.recordRecentLaunch(QStringLiteral("c"));
+    m_filter.recordRecentLaunch(QStringLiteral("d"));
+    QCOMPARE(m_filter.recentApps().size(), 3);
+    QCOMPARE(m_filter.recentApps(), (QStringList{
+        QStringLiteral("d"), QStringLiteral("c"), QStringLiteral("b")}));
+}
+
+void TestAppFilterModel::recordRecentLaunchDeduplicatesPriorEntry()
+{
+    m_filter.recordRecentLaunch(QStringLiteral("a"));
+    m_filter.recordRecentLaunch(QStringLiteral("b"));
+    m_filter.recordRecentLaunch(QStringLiteral("a")); // bump to front
+    QCOMPARE(m_filter.recentApps(), (QStringList{
+        QStringLiteral("a"), QStringLiteral("b")}));
+}
+
+void TestAppFilterModel::recordRecentLaunchAddsToKnownApps()
+{
+    QVERIFY(m_filter.knownApps().isEmpty());
+    m_filter.recordRecentLaunch(QStringLiteral("newapp"));
+    QVERIFY(m_filter.knownApps().contains(QStringLiteral("newapp")));
+}
+
+void TestAppFilterModel::recordRecentLaunchIgnoresEmptyId()
+{
+    QSignalSpy spy(&m_filter, &AppFilterModel::recentAppsChanged);
+    m_filter.recordRecentLaunch(QString());
+    QCOMPARE(spy.count(), 0);
+    QVERIFY(m_filter.recentApps().isEmpty());
 }
 
 QTEST_MAIN(TestAppFilterModel)

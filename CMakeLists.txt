@@ -52,6 +52,7 @@ set(SHARED_QML_FILES
     CategoryBar.qml
     CategoryGridView.qml
     GridPanel.qml
+    MnemonicResolver.qml
     PowerButtons.qml
     PrefixDetector.qml
     PrefixModeView.qml

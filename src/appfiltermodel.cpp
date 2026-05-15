@@ -210,13 +210,13 @@ bool AppFilterModel::isNewApp(const QString &storageId) const
 
 void AppFilterModel::markAllKnown()
 {
-    auto *model = qobject_cast<AppModel *>(sourceModel());
-    if (!model)
+    auto *src = sourceModel();
+    if (!src)
         return;
     QStringList all;
-    all.reserve(model->rowCount());
-    for (int i = 0; i < model->rowCount(); ++i)
-        all.append(model->index(i, 0).data(AppModel::StorageIdRole).toString());
+    all.reserve(src->rowCount());
+    for (int i = 0; i < src->rowCount(); ++i)
+        all.append(src->index(i, 0).data(AppModel::StorageIdRole).toString());
     setKnownApps(all);
 }
 
@@ -516,6 +516,19 @@ void AppFilterModel::moveFavorite(const QString &storageId, int toIndex)
 
 // --- Launching ---
 
+void AppFilterModel::recordRecentLaunch(const QString &storageId)
+{
+    if (storageId.isEmpty())
+        return;
+    m_recentApps.removeAll(storageId);
+    m_recentApps.prepend(storageId);
+    while (m_recentApps.size() > m_maxRecentApps)
+        m_recentApps.removeLast();
+    invalidate();
+    emit recentAppsChanged();
+    recordLaunch(storageId);
+}
+
 void AppFilterModel::launch(int proxyIndex)
 {
     const auto idx = index(proxyIndex, 0);
@@ -525,15 +538,7 @@ void AppFilterModel::launch(int proxyIndex)
         return;
 
     const auto sid = idx.data(AppModel::StorageIdRole).toString();
-    if (!sid.isEmpty()) {
-        m_recentApps.removeAll(sid);
-        m_recentApps.prepend(sid);
-        while (m_recentApps.size() > m_maxRecentApps)
-            m_recentApps.removeLast();
-        invalidate();
-        emit recentAppsChanged();
-        recordLaunch(sid);
-    }
+    recordRecentLaunch(sid);
 
     model->launch(sourceIdx.row());
 }
@@ -547,14 +552,7 @@ void AppFilterModel::launchByStorageId(const QString &storageId)
     for (int i = 0; i < model->rowCount(); ++i) {
         const auto idx = model->index(i, 0);
         if (idx.data(AppModel::StorageIdRole).toString() == storageId) {
-            m_recentApps.removeAll(storageId);
-            m_recentApps.prepend(storageId);
-            while (m_recentApps.size() > m_maxRecentApps)
-                m_recentApps.removeLast();
-            invalidate();
-            emit recentAppsChanged();
-            recordLaunch(storageId);
-
+            recordRecentLaunch(storageId);
             model->launch(i);
             return;
         }

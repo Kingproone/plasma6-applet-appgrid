@@ -71,7 +71,7 @@ jobs:
             qt6-base qt6-declarative \
             libplasma kpackage kio kservice ki18n \
             kcoreaddons kwindowsystem krunner layer-shell-qt \
-            plasma-workspace appstream
+            plasma-workspace appstream namcap
 
       - name: Checkout
         uses: actions/checkout@v5
@@ -113,6 +113,16 @@ jobs:
           if [ "$found" = "0" ]; then
             echo "no .po files to check"
           fi
+
+      - name: Lint QML
+        run: |
+          qmllint -I /usr/lib/qt6/qml \
+            package/contents/ui/*.qml \
+            package/contents/ui/iconanims/*.qml \
+            package/contents/ui/prefix/*.qml
+
+      - name: Lint PKGBUILD
+        run: namcap PKGBUILD
 
       - name: Package
         run: |

@@ -39,10 +39,15 @@ appgrid_add_test(test_appmodel_helpers)
 find_package(Qt6 OPTIONAL_COMPONENTS QuickTest Quick Qml)
 
 if(Qt6QuickTest_FOUND)
-    # Copy PrefixDetector.qml next to the test so it can be loaded relatively.
+    # Copy QML components next to the tests so they can be loaded relatively.
     configure_file(
         ${CMAKE_SOURCE_DIR}/package/contents/ui/PrefixDetector.qml
         ${CMAKE_CURRENT_SOURCE_DIR}/qml/PrefixDetector.qml
+        COPYONLY
+    )
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/MnemonicResolver.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml/MnemonicResolver.qml
         COPYONLY
     )
 

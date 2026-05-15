@@ -63,74 +63,37 @@ RowLayout {
     // with many dynamic buttons. We assign first unique letter per category
     // and handle Alt+letter ourselves.
 
-    property var mnemonicMap: ({})
     property bool altHeld: false
+    readonly property string allLabel: i18nd("dev.xarbit.appgrid", "All")
+    readonly property string favoritesLabel: i18nd("dev.xarbit.appgrid", "Favorites")
 
-    function rebuildMnemonics() {
-        var used = {}
-        var map = {}
-        var items = []
-
-        items.push({ type: "all", name: i18nd("dev.xarbit.appgrid", "All") })
-        var cats = categoryList
-        for (var i = 0; i < cats.length; i++)
-            items.push({ type: "category", name: cats[i] })
-        items.push({ type: "favorites", name: i18nd("dev.xarbit.appgrid", "Favorites") })
-
-        for (var i = 0; i < items.length; i++) {
-            var name = items[i].name
-            for (var j = 0; j < name.length; j++) {
-                var ch = name.charAt(j).toUpperCase()
-                if (ch >= 'A' && ch <= 'Z' && !used[ch]) {
-                    used[ch] = true
-                    map[ch] = items[i]
-                    break
-                }
-            }
-        }
-        mnemonicMap = map
+    MnemonicResolver {
+        id: mnemonicResolver
+        names: [allLabel].concat(categoryList).concat([favoritesLabel])
     }
 
-    // Returns the mnemonic letter index for a name, or -1
-    function mnemonicIndex(name) {
-        for (var letter in mnemonicMap) {
-            var entry = mnemonicMap[letter]
-            if (entry.name === name)
-                return name.toUpperCase().indexOf(letter)
-        }
-        return -1
-    }
+    // Trigger from outside; kept for API compatibility with previous code.
+    function rebuildMnemonics() { /* MnemonicResolver recomputes via binding */ }
+
+    function mnemonicIndex(name) { return mnemonicResolver.indexFor(name) }
+    function mnemonicRichText(name) { return mnemonicResolver.richTextFor(name) }
 
     function selectByMnemonic(key) {
-        var letter = String.fromCharCode(key).toUpperCase()
-        var entry = mnemonicMap[letter]
-        if (!entry)
-            return false
+        var name = mnemonicResolver.nameForKey(key)
+        if (!name) return false
 
-        if (entry.type === "all") {
+        if (name === allLabel) {
             selectAll()
             scrollToSelected()
             return true
         }
-        if (entry.type === "favorites") {
+        if (name === favoritesLabel) {
             categoryBar.favoritesToggled(!categoryBar.favoritesActive)
             return true
         }
-        if (entry.type === "category") {
-            selectCategory(entry.name)
-            scrollToSelected()
-            return true
-        }
-        return false
-    }
-
-    // Returns rich text with the mnemonic letter underlined, or plain name
-    function mnemonicRichText(name) {
-        var idx = mnemonicIndex(name)
-        if (idx < 0) return name
-        return name.substring(0, idx)
-            + "<u>" + name.charAt(idx) + "</u>"
-            + name.substring(idx + 1)
+        selectCategory(name)
+        scrollToSelected()
+        return true
     }
 
     // -- Category action helpers --
