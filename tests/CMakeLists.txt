@@ -33,3 +33,24 @@ appgrid_add_test(test_search_ranking ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
 appgrid_add_test(test_filter ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
 appgrid_add_test(test_sort ${CMAKE_CURRENT_SOURCE_DIR}/stubappmodel.h)
 appgrid_add_test(test_appmodel_helpers)
+
+# --- QML tests (QtQuickTest) ---
+
+find_package(Qt6 OPTIONAL_COMPONENTS QuickTest Quick Qml)
+
+if(Qt6QuickTest_FOUND)
+    # Copy PrefixDetector.qml next to the test so it can be loaded relatively.
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/package/contents/ui/PrefixDetector.qml
+        ${CMAKE_CURRENT_SOURCE_DIR}/qml/PrefixDetector.qml
+        COPYONLY
+    )
+
+    add_executable(tst_qml qml/main.cpp)
+    target_link_libraries(tst_qml PRIVATE Qt6::QuickTest Qt6::Quick Qt6::Qml Qt6::Core)
+    target_compile_definitions(tst_qml PRIVATE
+        QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/qml")
+    add_test(NAME tst_qml COMMAND tst_qml)
+else()
+    message(STATUS "Qt6QuickTest not found — skipping QML tests")
+endif()

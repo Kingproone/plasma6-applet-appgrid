@@ -53,6 +53,7 @@ set(SHARED_QML_FILES
     CategoryGridView.qml
     GridPanel.qml
     PowerButtons.qml
+    PrefixDetector.qml
     PrefixModeView.qml
     RecentAppsHeader.qml
     SearchBar.qml

@@ -82,6 +82,8 @@ jobs:
           cmake --build build -j$(nproc)
 
       - name: Run tests
+        env:
+          QT_QPA_PLATFORM: offscreen
         run: ctest --test-dir build --output-on-failure
 
       - name: Validate AppStream metadata

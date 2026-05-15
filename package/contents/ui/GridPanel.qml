@@ -63,24 +63,10 @@ Kirigami.ShadowedRectangle {
     }
 
     // -- Prefix mode detection --
-    readonly property string prefixMode: {
-        var t = searchBar.text
-        if (t.startsWith("t:")) return "terminal"
-        if (t.startsWith("i:")) return "info"
-        if (t.startsWith("h:")) return "hidden"
-        if (t.startsWith("?")) return "help"
-        if (t.startsWith("/") || t.startsWith("~/")) return "files"
-        if (t.startsWith(":")) return "command"
-        return ""
-    }
-    readonly property bool isPrefixMode: prefixMode !== ""
-    readonly property string prefixArgument: {
-        var t = searchBar.text
-        if (prefixMode === "terminal") return t.substring(2).trim()
-        if (prefixMode === "command") return t.substring(1).trim()
-        if (prefixMode === "files") return t.trim()
-        return ""
-    }
+    PrefixDetector { id: prefixDetector; input: searchBar.text }
+    readonly property string prefixMode: prefixDetector.mode
+    readonly property bool isPrefixMode: prefixDetector.isPrefixMode
+    readonly property string prefixArgument: prefixDetector.argument
 
     property bool _needsScrollToTop: false
 
