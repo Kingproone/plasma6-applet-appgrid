@@ -25,11 +25,14 @@ package-panel/contents/ui/AppIconDelegate.qml
 package-panel/contents/ui/CategoryBar.qml
 package-panel/contents/ui/CategoryGridView.qml
 package-panel/contents/ui/GridPanel.qml
+package-panel/contents/ui/MnemonicResolver.qml
 package-panel/contents/ui/PowerButtons.qml
+package-panel/contents/ui/PrefixDetector.qml
 package-panel/contents/ui/PrefixModeView.qml
 package-panel/contents/ui/RecentAppsHeader.qml
 package-panel/contents/ui/SearchBar.qml
 package-panel/contents/ui/SearchResultsList.qml
+package-panel/contents/ui/SharedFavoritesProvider.qml
 package-panel/contents/ui/ShuffleOverlay.qml
 package-panel/contents/ui/prefix/
 package-panel/contents/ui/iconanims/
