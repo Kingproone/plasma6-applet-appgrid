@@ -52,6 +52,8 @@ set(SHARED_QML_FILES
     CategoryBar.qml
     CategoryGridView.qml
     DragSource.qml
+    EdgeAutoScroller.qml
+    FavoritesReorderArea.qml
     SharedFavoritesProvider.qml
     GridPanel.qml
     MnemonicResolver.qml

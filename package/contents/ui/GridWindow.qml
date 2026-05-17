@@ -2,7 +2,7 @@
     SPDX-FileCopyrightText: 2026 AppGrid Contributors
     SPDX-License-Identifier: GPL-2.0-or-later
 
-    Overlay window for fullscreen and centered popup display modes.
+    Overlay window for the centered popup display mode.
     Wayland: LayerShellQt (via C++ configureWindow/updateWindowScreen) handles
              overlay layer, screen selection, and window sizing.
     X11:     configureWindow sets frameless/stay-on-top/skip-taskbar flags;
