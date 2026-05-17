@@ -51,6 +51,7 @@ set(SHARED_QML_FILES
     AppIconDelegate.qml
     CategoryBar.qml
     CategoryGridView.qml
+    DragSource.qml
     SharedFavoritesProvider.qml
     GridPanel.qml
     MnemonicResolver.qml

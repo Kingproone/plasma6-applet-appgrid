@@ -32,11 +32,11 @@ Item {
     // Dolphin, desktop) accept the dropped app.
     property string desktopFile: ""
     property int gridRow: -1
-    // External drag proxy that carries the grab image and mime data while
-    // this delegate is being dragged. Same pattern as Kickoff's `dragSource`
-    // (see BUG 449426). When null, dragging is disabled entirely.
-    property Item dragProxy: null
-    // True iff this delegate may be dragged. The proxy presence is necessary
+    // Shared DragSource that carries the grab image and mime data while this
+    // delegate is being dragged. Same pattern as Kickoff's `dragSource` (see
+    // BUG 449426). When null, dragging is disabled entirely.
+    property Item dragSource: null
+    // True iff this delegate may be dragged. dragSource presence is necessary
     // but not sufficient — internal reorder is gated on tab/sort context.
     property bool dragEnabled: false
     signal clicked(var mouse)
@@ -190,37 +190,27 @@ Item {
         ? "file://" + root.desktopFile : ""
 
     // -- Drag handler for favorites reordering and external drag-out --
-    // Mirrors the Kickoff pattern: a delegate's DragHandler activates a
-    // shared proxy Item (kicker.favoritesDragProxy) that owns Drag.Automatic
-    // and the mime data. Internal reorder reads `text/x-appgrid-storage-id`;
-    // external drop targets (taskbar, panel, Dolphin) read `text/uri-list`.
+    // A DragHandler on this delegate activates the shared DragSource (see
+    // kicker.dragSource / DragSource.qml). Internal reorder identifies "our"
+    // drags via dragSource.isOwnDrag(drag) and reads dragSource.sourceItem
+    // (set to this delegate). External drop targets receive `text/uri-list`
+    // pointing at the app's .desktop file.
     function _beginDrag(handler) {
-        if (!root.dragProxy) return
+        if (!root.dragSource) return
         if (!handler.active) {
-            root.dragProxy.Drag.active = false
-            root.dragProxy.Drag.imageSource = ""
-            root.dragProxy.sourceItem = null
+            root.dragSource.endDrag()
             return
         }
-        delegateIcon.grabToImage(function(result) {
-            if (!handler.active) return
-            root.dragProxy.sourceItem = root
-            root.dragProxy.Drag.imageSource = result.url
-            const mime = {}
-            if (root.storageId.length > 0)
-                mime["text/x-appgrid-storage-id"] = root.storageId
-            if (root.desktopFileUrl.toString().length > 0) {
-                mime["text/uri-list"] = [root.desktopFileUrl]
-            }
-            root.dragProxy.Drag.mimeData = mime
-            root.dragProxy.Drag.active = true
-        })
+        const mime = root.desktopFileUrl.toString().length > 0
+            ? { "text/uri-list": [root.desktopFileUrl] }
+            : {}
+        root.dragSource.beginDrag(root, delegateIcon, mime, handler)
     }
 
     DragHandler {
         id: pointerDrag
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad | PointerDevice.Stylus
-        enabled: root.dragEnabled && root.dragProxy !== null
+        enabled: root.dragEnabled && root.dragSource !== null
                  && (root.storageId.length > 0 || root.desktopFile.length > 0)
         target: null
         // Higher than the Qt default to avoid accidental drags on jittery

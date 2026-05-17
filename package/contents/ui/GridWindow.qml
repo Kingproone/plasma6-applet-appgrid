@@ -216,8 +216,8 @@ Window {
     // isn't cancelled by the source window disappearing mid-drag).
     property bool closeOnDeactivate: false
     readonly property bool _dragInFlight: appletInterface
-        && appletInterface.favoritesDragProxy
-        && appletInterface.favoritesDragProxy.Drag.active
+        && appletInterface.dragSource
+        && appletInterface.dragSource.isDragInFlight
     onActiveChanged: {
         if (!active && visible && closeOnDeactivate && !_dragInFlight) {
             if (appletInterface)

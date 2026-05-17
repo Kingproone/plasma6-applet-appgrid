@@ -24,6 +24,7 @@ package-panel/contents/ui/AppGridView.qml
 package-panel/contents/ui/AppIconDelegate.qml
 package-panel/contents/ui/CategoryBar.qml
 package-panel/contents/ui/CategoryGridView.qml
+package-panel/contents/ui/DragSource.qml
 package-panel/contents/ui/GridPanel.qml
 package-panel/contents/ui/MnemonicResolver.qml
 package-panel/contents/ui/PowerButtons.qml

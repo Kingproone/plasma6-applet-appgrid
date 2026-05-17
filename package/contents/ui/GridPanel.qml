@@ -717,8 +717,8 @@ Kirigami.ShadowedRectangle {
                     appsModel: panel.appsModel
                     sharedFavoritesModel: panel.sharedFavoritesModel
                     _favoriteIdRole: panel._favoriteIdRole
-                    favoritesDragProxy: panel.appletInterface
-                                        ? panel.appletInterface.favoritesDragProxy : null
+                    dragSource: panel.appletInterface
+                                        ? panel.appletInterface.dragSource : null
                     columns: panel.columns
                     adaptiveColumns: panel.nativePopup
                     iconSize: panel.gridIconSize

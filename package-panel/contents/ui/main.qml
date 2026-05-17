@@ -20,15 +20,11 @@ PlasmoidItem {
     // Keep the popup open while a drag-out is in flight so the source surface
     // doesn't disappear mid-drag (which would cancel the platform DnD before
     // the drop target accepts it).
-    hideOnWindowDeactivate: !(favoritesDragProxy.Drag.active)
+    hideOnWindowDeactivate: !dragSource.isDragInFlight
 
-    // Shared drag proxy — see standalone main.qml for the rationale.
-    readonly property Item favoritesDragProxy: Item {
-        id: dragSource
-        property Item sourceItem
-        Drag.dragType: Drag.Automatic
-        Drag.supportedActions: Qt.MoveAction | Qt.CopyAction | Qt.LinkAction
-    }
+    // Shared drag source for all app drags — see DragSource.qml.
+    readonly property alias dragSource: dragSourceImpl
+    DragSource { id: dragSourceImpl }
 
     Plasmoid.icon: Plasmoid.configuration.useCustomButtonImage
         ? Plasmoid.configuration.customButtonImage

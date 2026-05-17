@@ -124,7 +124,7 @@ GridView {
     // delegate (which would drop the pointer grab). One viewport of slack
     // is enough — the row count of favorites that fit in a viewport is the
     // upper bound on how far auto-scroll moves before the user lifts.
-    cacheBuffer: (favoritesDragProxy && favoritesDragProxy.Drag.active)
+    cacheBuffer: (dragSource && dragSource.isDragInFlight)
                  ? Math.max(height, Kirigami.Units.gridUnit * 16)
                  : Kirigami.Units.gridUnit * 4
     readonly property bool labelsHidden: hideLabelsOnFavorites && favoritesActive
@@ -153,8 +153,8 @@ GridView {
     // The apps model for section queries
     property var appsModel: null
     property var sharedFavoritesModel: null
-    // Shared drag proxy from the plasmoid root; set by GridPanel.
-    property var favoritesDragProxy: null
+    // Shared DragSource from the plasmoid root; set by GridPanel.
+    property var dragSource: null
 
     // FavoriteId role index — pushed in by the owner once the shared model
     // is ready (see GridPanel.sharedFavoritesLoader). -1 disables lookup.
@@ -354,7 +354,7 @@ GridView {
         favoritesActive: gridView.favoritesActive
         showDividers: gridView.showDividers
         showTooltips: gridView.showTooltips
-        dragProxy: gridView.favoritesDragProxy
+        dragSource: gridView.dragSource
         onRecentLaunched: function(storageId) { gridView.recentLaunched(storageId) }
         onContextMenuRequested: function(storageId, desktopFile) {
             gridView.contextMenuRequested(-1, storageId, desktopFile)
@@ -439,7 +439,7 @@ GridView {
             // pinning); internal reorder is gated separately in the DropArea
             // based on the source delegate's storageId lookup, so always
             // enabling the drag here is safe.
-            dragProxy: gridView.favoritesDragProxy
+            dragSource: gridView.dragSource
             dragEnabled: true
             onClicked: function(mouse) {
                 if (mouse.button === Qt.RightButton) {
@@ -473,7 +473,7 @@ GridView {
     // -- Drag reorder handler --
     // Sits behind the delegates (z below them so clicks still reach icons)
     // and handles two drag flavours:
-    //   * Internal: drag.source is the shared favoritesDragProxy carrying a
+    //   * Internal: drag.source is the shared dragSource carrying a
     //     reference to the source delegate via `sourceItem`. We re-order
     //     favorites live as the cursor moves.
     //   * External: .desktop file drag from Dolphin/elsewhere — add as fav.
@@ -489,10 +489,7 @@ GridView {
 
         property var pendingMoves: []
 
-        function _isOwnDrag(drag) {
-            return gridView.favoritesDragProxy
-                && drag.source === gridView.favoritesDragProxy
-        }
+        readonly property var _proxy: gridView.dragSource
 
         onEntered: drag => {
             pendingMoves = []
@@ -500,7 +497,7 @@ GridView {
             // tab — switch to favorites so the drop targets the right model.
             // Skip our own drag-out events; those carry text/uri-list too but
             // the user is dragging to leave AppGrid, not to add a favorite.
-            if (drag.hasUrls && !_isOwnDrag(drag)
+            if (drag.hasUrls && !(_proxy && _proxy.isOwnDrag(drag))
                     && (!gridView.favoritesActive
                         || Plasmoid.configuration.sortFavoritesAlphabetically)) {
                 gridView.externalFavoriteDragReceived()
@@ -516,8 +513,8 @@ GridView {
         }
 
         onPositionChanged: drag => {
-            if (!_isOwnDrag(drag)
-                    || !gridView.favoritesDragProxy.sourceItem
+            if (!_proxy || !_proxy.isOwnDrag(drag)
+                    || !_proxy.sourceItem
                     || !gridView.sharedFavoritesModel) {
                 return
             }
@@ -531,7 +528,7 @@ GridView {
                 return
             }
 
-            const source = gridView.favoritesDragProxy.sourceItem
+            const source = _proxy.sourceItem
             // Re-resolve the source's current row from the model rather than
             // trusting the cached value — content may have shifted under us
             // during a scroll or external favorites change.
@@ -554,7 +551,7 @@ GridView {
 
         onDropped: drag => {
             // Internal reorder ended — KAStats persists itself.
-            if (_isOwnDrag(drag)) {
+            if ((_proxy && _proxy.isOwnDrag(drag))) {
                 pendingMoves = []
                 return
             }

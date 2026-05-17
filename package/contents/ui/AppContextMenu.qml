@@ -60,8 +60,8 @@ PlasmaComponents.Menu {
         // Disabled while a drag-reorder is mid-flight to avoid clobbering
         // KAStats state and stale-grabbing the in-progress move.
         enabled: !(contextMenu.appletInterface
-                   && contextMenu.appletInterface.favoritesDragProxy
-                   && contextMenu.appletInterface.favoritesDragProxy.Drag.active)
+                   && contextMenu.appletInterface.dragSource
+                   && contextMenu.appletInterface.dragSource.isDragInFlight)
         onClicked: {
             const sid = contextMenu.popupStorageId
             if (!sid) return
