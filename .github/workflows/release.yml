@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags: ["v*"]
 
 permissions:
   contents: write
@@ -160,28 +160,23 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: fedora-package-${{ matrix.arch }}
-          path: '*.rpm'
-
-  # OpenMandriva — disabled. Cooker container's dnf install was
-  # unreliable in CI (long upgrade chains with scriptlet errors,
-  # intermittent missing Qt6 components). OMV users can install via
-  # the universal tarball; see packages/universal/distros.toml.
+          path: "*.rpm"
 
   deb-packages:
     name: ${{ matrix.distro.name }} (${{ matrix.arch.name }})
     needs: [version, tests]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latestmandri
     strategy:
       fail-fast: false
       matrix:
         distro:
-          - {name: "Ubuntu 25.04", image: "ubuntu:25.04", id: "ubuntu-25.04"}
-          - {name: "Ubuntu 25.10", image: "ubuntu:25.10", id: "ubuntu-25.10"}
-          - {name: "Ubuntu 26.04", image: "ubuntu:26.04", id: "ubuntu-26.04"}
-          - {name: "Debian 13", image: "debian:13", id: "debian-13"}
+          - { name: "Ubuntu 25.04", image: "ubuntu:25.04", id: "ubuntu-25.04" }
+          - { name: "Ubuntu 25.10", image: "ubuntu:25.10", id: "ubuntu-25.10" }
+          - { name: "Ubuntu 26.04", image: "ubuntu:26.04", id: "ubuntu-26.04" }
+          - { name: "Debian 13", image: "debian:13", id: "debian-13" }
         arch:
-          - {name: "x86_64", platform: "linux/amd64", deb: "amd64"}
-          - {name: "aarch64", platform: "linux/arm64", deb: "arm64"}
+          - { name: "x86_64", platform: "linux/amd64", deb: "amd64" }
+          - { name: "aarch64", platform: "linux/arm64", deb: "arm64" }
     env:
       APP_VERSION: ${{ needs.version.outputs.version }}
     steps:
@@ -241,7 +236,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.distro.id }}-package-${{ matrix.arch.deb }}
-          path: '*.deb'
+          path: "*.deb"
 
   universal:
     name: Universal package (${{ matrix.arch }})
@@ -316,7 +311,7 @@ jobs:
 
   release:
     name: Create Release
-    needs: [version, arch, fedora, openmandriva, deb-packages, universal]
+    needs: [version, arch, fedora, deb-packages, universal]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts

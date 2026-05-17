@@ -293,12 +293,6 @@ jobs:
           name: fedora-package-${{ matrix.arch }}
           path: "*.rpm"
 
-  # OpenMandriva — disabled. The Cooker container's dnf install was
-  # unreliable in CI (long upgrade chains with scriptlet errors,
-  # intermittent missing Qt6 components even though packages were
-  # listed). OpenMandriva users can still install via the universal
-  # tarball; see packages/universal/distros.toml [openmandriva].
-
   deb-packages:
     name: ${{ matrix.distro.name }} (${{ matrix.arch.name }})
     needs: [version, tests]
