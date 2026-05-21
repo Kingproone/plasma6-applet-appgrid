@@ -217,5 +217,6 @@ jobs:
             echo "${aur_pkg}: already up to date."
           else
             git commit -m "Update to ${{ inputs.version }}"
-            git push
+            # The AUR only accepts pushes to master.
+            git push origin HEAD:master
           fi
