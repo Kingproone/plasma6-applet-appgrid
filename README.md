@@ -11,7 +11,7 @@ A grid-style application launcher for KDE Plasma 6, inspired by macOS Launchpad,
 ![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-6.0+-blue)
 ![License](https://img.shields.io/badge/License-GPL--2.0--or--later-green)
 
-![AppGrid](images/launcher.png)
+![AppGrid](images/launcher-empty.png)
 
 Website with screenshots, features, FAQ, and install instructions: **[appgrid.xarbit.dev](https://appgrid.xarbit.dev)**. Build instructions, configuration reference, internals, and contributor notes: **[appgrid.xarbit.dev/docs](https://appgrid.xarbit.dev/docs)**.
 
