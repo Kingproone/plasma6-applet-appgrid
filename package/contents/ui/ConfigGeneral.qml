@@ -227,7 +227,10 @@ KCMUtils.SimpleKCM {
 
         QQC2.CheckBox {
             id: useExtraRunners
-            text: i18nd("dev.xarbit.appgrid", "Expand search to bookmarks, files, and websites")
+            text: i18nd("dev.xarbit.appgrid", "Use KDE search plugins (KRunner)")
+            QQC2.ToolTip.text: i18nd("dev.xarbit.appgrid", "Includes the calculator, unit conversion, file search, bookmarks, web shortcuts and other KRunner plugins. Use \"Configure Search Plugins\" to choose which are active.")
+            QQC2.ToolTip.visible: hovered
+            QQC2.ToolTip.delay: Kirigami.Units.toolTipDelay
         }
 
         QQC2.Button {
