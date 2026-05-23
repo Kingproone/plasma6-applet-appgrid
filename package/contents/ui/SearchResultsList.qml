@@ -34,6 +34,17 @@ ListView {
     property bool mouseMovedSinceReset: false
     onCountChanged: mouseMovedSinceReset = false
 
+    property bool _hoverCooldown: false
+    function _beginHoverCooldown() {
+        _hoverCooldown = true
+        hoverCooldownTimer.restart()
+    }
+    Timer {
+        id: hoverCooldownTimer
+        interval: 200
+        onTriggered: listView._hoverCooldown = false
+    }
+
     Keys.onReturnPressed: if (currentIndex >= 0) listView.launched(currentIndex)
     Keys.onEnterPressed: if (currentIndex >= 0) listView.launched(currentIndex)
 
@@ -210,10 +221,20 @@ ListView {
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 cursorShape: Qt.PointingHandCursor
                 onEntered: {
-                    if (!listView.mouseMovedSinceReset)
+                    if (!listView.mouseMovedSinceReset) {
                         listView.mouseMovedSinceReset = true
-                    else
-                        listView.currentIndex = model.index
+                        return
+                    }
+                    if (listView._hoverCooldown)
+                        return
+
+                    const rowY = parent.mapToItem(listView, 0, 0).y
+                    const clippedAtBottom = rowY + parent.height > listView.height
+                    const edgeStrip = Kirigami.Units.gridUnit
+                    if (clippedAtBottom && mouseY > parent.height - edgeStrip)
+                        return
+                    listView.currentIndex = model.index
+                    listView._beginHoverCooldown()
                 }
                 onClicked: function(mouse) {
                     if (mouse.button === Qt.RightButton)
