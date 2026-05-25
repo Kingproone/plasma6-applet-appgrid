@@ -132,7 +132,7 @@ RowLayout {
     // -- Category action helpers --
 
     function closeCategoryMenu() { catContextMenu.close() }
-    function resetScroll() { _setContentX(0, true) }
+    function resetScroll() { _setContentX(0) }
 
     function selectAll() {
         if (categoryBar.favoritesActive)
@@ -169,24 +169,20 @@ RowLayout {
         return catFlick.width - (catFlick.contentX <= 0 ? scrollArrowWidth : 0)
     }
 
-    // Single landing-point for both wheel and arrow clicks. Arms
-    // _anchoredRight when target reaches maxX so contentX stays
+    // Single landing-point for wheel, arrow clicks, alt+arrow, reset.
+    // Arms _anchoredRight when target reaches maxX so contentX stays
     // glued to the right edge as the left arrow expands afterwards
     // (which shrinks the viewport and grows maxX) — without it the
     // right arrow stays visible because contentX falls short of the
-    // new bound. `instant` skips the contentX Behavior so arrow
-    // clicks land in-frame (wheel keeps the slide).
-    function _setContentX(target, instant) {
+    // new bound. Always lands in-frame (Behavior suppressed) so the
+    // categories track every input source snappily.
+    function _setContentX(target) {
         const maxX = Math.max(0, catFlick.contentWidth - catFlick.width)
         const clamped = Math.max(0, Math.min(maxX, target))
         catFlick._anchoredRight = (clamped === maxX && maxX > 0)
-        if (instant) {
-            catFlick._suppressContentXAnim = true
-            catFlick.contentX = clamped
-            catFlick._suppressContentXAnim = false
-        } else {
-            catFlick.contentX = clamped
-        }
+        catFlick._suppressContentXAnim = true
+        catFlick.contentX = clamped
+        catFlick._suppressContentXAnim = false
     }
 
     // Page by ~one viewport per click, anchoring the boundary item so
@@ -206,17 +202,17 @@ RowLayout {
             else break
         }
         if (lastFit < 0 || lastFit === catRepeater.count - 1) {
-            _setContentX(catFlick.contentWidth, true)
+            _setContentX(catFlick.contentWidth)
             return
         }
         var fitItem = catRepeater.itemAt(lastFit)
         const target = (fitItem.x + fitItem.width) - W + Kirigami.Units.smallSpacing
         var lastItem = catRepeater.itemAt(catRepeater.count - 1)
         if (lastItem && lastItem.x < target + W + 1) {
-            _setContentX(catFlick.contentWidth, true)
+            _setContentX(catFlick.contentWidth)
             return
         }
-        _setContentX(target, true)
+        _setContentX(target)
     }
     function pageLeft() {
         const W = catFlick.width
@@ -228,16 +224,16 @@ RowLayout {
             if (it.x >= tentativeLeft - 1) { firstFit = i; break }
         }
         if (firstFit <= 0) {
-            _setContentX(0, true)
+            _setContentX(0)
             return
         }
         const target = catRepeater.itemAt(firstFit).x - Kirigami.Units.smallSpacing
         var firstItem = catRepeater.itemAt(0)
         if (firstItem && firstItem.x + firstItem.width > target - 1) {
-            _setContentX(0, true)
+            _setContentX(0)
             return
         }
-        _setContentX(target, true)
+        _setContentX(target)
     }
 
     // Scroll the flickable so the currently selected category button is visible
@@ -247,7 +243,7 @@ RowLayout {
 
             // "All" is selected — scroll to start
             if (active === "") {
-                _setContentX(0, true)
+                _setContentX(0)
                 return
             }
 
@@ -263,7 +259,7 @@ RowLayout {
                     var viewRight = catFlick.contentX + catFlick.width
 
                     if (itemLeft < viewLeft)
-                        _setContentX(itemLeft - Kirigami.Units.smallSpacing, true)
+                        _setContentX(itemLeft - Kirigami.Units.smallSpacing)
                     else if (itemRight > viewRight)
                         _setContentX(itemRight - _viewportWidthAfterRightScroll()
                                                 + Kirigami.Units.smallSpacing, true)
