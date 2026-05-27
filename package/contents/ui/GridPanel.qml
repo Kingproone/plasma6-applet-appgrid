@@ -12,7 +12,6 @@ import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
 import org.kde.plasma.plasmoid
-import "favoriteid.js" as FavoriteId
 import "migrations.js" as Migrations
 
 Kirigami.ShadowedRectangle {
@@ -226,7 +225,7 @@ Kirigami.ShadowedRectangle {
         if (!appsModel) return
         appsModel.hiddenApps = Plasmoid.configuration.hiddenApps || []
         // Favorites are loaded from KAStatsFavoritesModel after migration —
-        // see sharedFavoritesLoader.onStatusChanged.
+        // see FavoritesManager.qml.
         appsModel.maxRecentApps = columns
         appsModel.sortMode = sortMode
         appsModel.useSystemCategories = Plasmoid.configuration.useSystemCategories !== false
@@ -259,175 +258,13 @@ Kirigami.ShadowedRectangle {
     }
 
     // -- KActivities-backed favorites (always the source of truth) --
-    // SharedFavoritesProvider.qml isolates the org.kde.plasma.private.kicker
-    // import so a missing private launcher plugin is logged rather than crashing.
-    Loader {
-        id: sharedFavoritesLoader
-        active: true
-        source: "SharedFavoritesProvider.qml"
-        onStatusChanged: {
-            if (status === Loader.Error) {
-                console.warn("AppGrid: org.kde.plasma.private.kicker plugin missing — favorites disabled")
-                return
-            }
-            if (status === Loader.Ready && item) {
-                item.initForClient("dev.xarbit.appgrid.favorites.instance-" + Plasmoid.id)
-                // Probe the well-known Kicker::FavoriteIdRole at runtime
-                // (see _kickerFavoriteIdRole comment). If the data at that
-                // role isn't a string, Plasma's enum has shifted and reorder
-                // is left inert rather than reading wrong data.
-                if (item.count > 0) {
-                    const probe = item.data(item.index(0, 0), panel._kickerFavoriteIdRole)
-                    if (typeof probe === "string") {
-                        panel.favoriteIdRole = panel._kickerFavoriteIdRole
-                    } else {
-                        console.warn("AppGrid: FavoriteIdRole probe failed (got " + typeof probe
-                                     + "); favorites reorder will be inert. Kicker enum may have shifted.")
-                    }
-                } else {
-                    // No entries yet — accept the well-known value; the probe
-                    // re-runs once entries land via onRowsInserted below.
-                    panel.favoriteIdRole = panel._kickerFavoriteIdRole
-                }
-                // Migration + initial mirror are deferred until the model is
-                // 'enabled' — KAStats only honours portOldFavorites once
-                // kactivitymanagerd has finished initialising. See Connections
-                // block below.
-                if (item.enabled) {
-                    panel._maybeMigrateAndMirror()
-                }
-            }
-        }
+    FavoritesManager {
+        id: favorites
+        appsModel: panel.appsModel
     }
-
-    // One-shot migration from the 1.7.x local backup into KAStats. Runs
-    // once per install (gated by favoritesPortedToKAstats) and never
-    // touches KAStats again afterwards — re-reading and merging back used
-    // to drag Plasma's seeded defaults (Konsole, Discover, Settings) into
-    // the user's favorites on every reopen (#144). Called after
-    // KAStatsFavoritesModel.enabled flips true, or immediately if it was
-    // already true at load time.
-    function _maybeMigrateAndMirror() {
-        const item = sharedFavoritesLoader.item
-        if (!item) return
-        // Role probe hasn't resolved yet — try once it has on the next
-        // model signal. Skip mirror; nothing useful to do.
-        if (favoriteIdRole < 0) return
-
-        if (Plasmoid.configuration.favoritesPortedToKAstats) {
-            panel._mirrorFavorites()
-            return
-        }
-
-        const local = Plasmoid.configuration.favoriteApps || []
-        if (local.length > 0) {
-            // 1.7.x upgrade path. KAStatsFavoritesModel has no clear()
-            // and portOldFavorites only re-ranks, so any entry already
-            // in the KActivities backing store (Plasma's seeded defaults
-            // or favourites added during earlier 1.8.x sessions) would
-            // survive and merge into the result — #144. Snapshot the
-            // current ids and removeFavorite each before writing the
-            // user's actual backup.
-            const existing = []
-            for (let i = 0; i < item.count; ++i) {
-                const v = item.data(item.index(i, 0), favoriteIdRole)
-                if (v) existing.push(v.toString())
-            }
-            for (let i = 0; i < existing.length; ++i)
-                item.removeFavorite(existing[i])
-            const prefixed = local.map(function(id) {
-                return FavoriteId.toPrefixed(id)
-            })
-            item.portOldFavorites(prefixed)
-        }
-        // else: fresh install — leave KAStats's seed alone.
-
-        panel._mirrorFavorites()
-    }
-
-    // KAStatsFavoritesModel's `favorites` property is a no-op in upstream
-    // Kicker, so we read favoriteIds row-by-row instead. AppFilterModel
-    // matches against bare storage IDs; we strip the scheme prefix when
-    // present (see favoriteid.js). Resolved imperatively in
-    // sharedFavoritesLoader's onStatusChanged once the model's roleNames()
-    // is available. -1 means "not yet known"; findFavoriteRow and
-    // _mirrorFavorites guard on that.
-    property int favoriteIdRole: -1
-
-    // Kicker::FavoriteIdRole == Qt::UserRole + 3 == 259. QML cannot read
-    // QAbstractItemModel::roleNames() (not Q_INVOKABLE on Qt6), so we
-    // hard-code the well-known value and probe it at runtime (below). If
-    // Plasma ever shifts the enum the probe falls back to disabling reorder
-    // rather than misreading data at a stale role index.
-    readonly property int _kickerFavoriteIdRole: 259
-
-    function _mirrorFavorites() {
-        if (!panel.appsModel || !panel.sharedFavoritesModel) return
-        if (favoriteIdRole < 0) return
-        const model = panel.sharedFavoritesModel
-        const ids = []
-        for (let i = 0; i < model.count; ++i) {
-            const raw = model.data(model.index(i, 0), favoriteIdRole)
-            if (!raw) continue
-            ids.push(FavoriteId.stripPrefix(raw))
-        }
-        panel.appsModel.favoriteApps = ids
-    }
-
-    Connections {
-        target: sharedFavoritesLoader.item
-        ignoreUnknownSignals: true
-        function onEnabledChanged() {
-            if (sharedFavoritesLoader.item && sharedFavoritesLoader.item.enabled)
-                panel._maybeMigrateAndMirror()
-        }
-    }
-
-    readonly property var sharedFavoritesModel: sharedFavoritesLoader.item
-
-    // KAStatsFavoritesModel's `favoritesChanged` is a stub in upstream
-    // Kicker, so we listen to QAbstractItemModel signals and coalesce
-    // the resulting burst (insert/remove/move/reset/layoutChanged/dataChanged
-    // often fire back-to-back) into one mirror per event-loop turn. The
-    // mirror only runs in alpha-sort mode; drag-reorder reads the shared
-    // model directly.
-    readonly property bool mirrorRequired: Plasmoid.configuration.sortFavoritesAlphabetically === true
-
-    Timer {
-        id: mirrorCoalesce
-        interval: 0
-        repeat: false
-        onTriggered: {
-            if (!Plasmoid.configuration.favoritesPortedToKAstats
-                    && panel.sharedFavoritesModel
-                    && panel.sharedFavoritesModel.count > 0) {
-                Plasmoid.configuration.favoritesPortedToKAstats = true
-            }
-            if (panel.mirrorRequired)
-                panel._mirrorFavorites()
-        }
-    }
-
-    // Catch up the proxy when the user enables alpha-sort mid-session.
-    onMirrorRequiredChanged: {
-        if (mirrorRequired) mirrorCoalesce.restart()
-    }
-
-    Connections {
-        target: panel.sharedFavoritesModel
-        ignoreUnknownSignals: true
-        function _scheduleMirror() {
-            // Migration finalisation still needs to happen even when not
-            // mirroring (so the flag flips once KAStats has data).
-            mirrorCoalesce.restart()
-        }
-        function onRowsInserted() { _scheduleMirror() }
-        function onRowsRemoved() { _scheduleMirror() }
-        function onRowsMoved() { _scheduleMirror() }
-        function onModelReset() { _scheduleMirror() }
-        function onLayoutChanged() { _scheduleMirror() }
-        function onDataChanged() { _scheduleMirror() }
-    }
+    readonly property alias favoriteIdRole: favorites.favoriteIdRole
+    readonly property alias sharedFavoritesModel: favorites.sharedFavoritesModel
+    readonly property alias mirrorRequired: favorites.mirrorRequired
 
 
     // Snap the panel height instantly on every compact-mode transition

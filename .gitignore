@@ -46,10 +46,12 @@ package-panel/contents/ui/ConfigSearch.qml
 package-panel/contents/ui/ConfigSession.qml
 package-panel/contents/ui/DragSource.qml
 package-panel/contents/ui/EdgeAutoScroller.qml
+package-panel/contents/ui/FavoritesManager.qml
 package-panel/contents/ui/FavoritesReorderArea.qml
 package-panel/contents/ui/FavoritesTabDragHover.qml
 package-panel/contents/ui/KeyboardShortcuts.qml
 package-panel/contents/ui/favoriteid.js
+package-panel/contents/ui/favoritesmigration.js
 package-panel/contents/ui/gridnav.js
 package-panel/contents/ui/migrations.js
 package-panel/contents/ui/scrolleasing.js

@@ -139,10 +139,12 @@ set(SHARED_QML_FILES
     ConfigSession.qml
     DragSource.qml
     EdgeAutoScroller.qml
+    FavoritesManager.qml
     FavoritesReorderArea.qml
     FavoritesTabDragHover.qml
     KeyboardShortcuts.qml
     favoriteid.js
+    favoritesmigration.js
     gridnav.js
     migrations.js
     scrolleasing.js
