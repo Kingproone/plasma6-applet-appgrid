@@ -7,24 +7,25 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.plasmoid
 
-import "../controllers"
 import "../widgets"
 
 ScrollableColumn {
     id: infoView
 
-    property var sysInfo: Plasmoid.systemInfo()
     property var sharedFavoritesModel: null
 
-    ConfigCache { id: cfg; source: Plasmoid.configuration }
+    // Injected from the boundary (see inner-widget-decoupling-plan.md).
+    required property var sysInfo
+    required property var updateChecker
+    required property bool favoritesPortedToKAstats
+    required property list<string> favoriteApps
+    // markUnported() clears the KAStats migration flag at the boundary.
+    required property var markUnported
 
-    showScrollbars: cfg.showScrollbars
-
-    readonly property alias _migrated: cfg.favoritesPortedToKAstats
+    readonly property bool _migrated: infoView.favoritesPortedToKAstats
     readonly property int _kastatsCount: sharedFavoritesModel ? sharedFavoritesModel.count : 0
-    readonly property int _localCount: cfg.favoriteApps.length
+    readonly property int _localCount: infoView.favoriteApps.length
 
     PlasmaComponents.Label {
         text: i18nd("dev.xarbit.appgrid", "System Information")
@@ -74,27 +75,27 @@ ScrollableColumn {
                 }
                 PlasmaComponents.ToolButton {
                     visible: modelData.checkUpdates === true
-                             && !!Plasmoid.updateChecker
+                             && !!infoView.updateChecker
                     icon.name: checkUpdatesBusy.running ? "view-refresh" : "system-software-update"
-                    text: Plasmoid.updateChecker && Plasmoid.updateChecker.hasUpdate === true
+                    text: infoView.updateChecker && infoView.updateChecker.hasUpdate === true
                           ? i18nd("dev.xarbit.appgrid", "Update %1 available",
-                                  Plasmoid.updateChecker.latestVersion)
+                                  infoView.updateChecker.latestVersion)
                           : i18nd("dev.xarbit.appgrid", "Check for updates")
                     display: PlasmaComponents.AbstractButton.TextBesideIcon
-                    PlasmaComponents.ToolTip.text: Plasmoid.updateChecker && Plasmoid.updateChecker.hasUpdate === true
+                    PlasmaComponents.ToolTip.text: infoView.updateChecker && infoView.updateChecker.hasUpdate === true
                         ? i18nd("dev.xarbit.appgrid",
                                 "Click to open release notes for %1",
-                                Plasmoid.updateChecker.latestVersion)
+                                infoView.updateChecker.latestVersion)
                         : i18nd("dev.xarbit.appgrid",
                                 "Force an immediate check against the AppGrid website (bypasses the 24h schedule).")
                     PlasmaComponents.ToolTip.visible: hovered
                     PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
                     onClicked: {
-                        if (!Plasmoid.updateChecker) return
-                        if (Plasmoid.updateChecker.hasUpdate === true) {
-                            Plasmoid.updateChecker.openReleasePage()
+                        if (!infoView.updateChecker) return
+                        if (infoView.updateChecker.hasUpdate === true) {
+                            infoView.updateChecker.openReleasePage()
                         } else {
-                            Plasmoid.updateChecker.checkNow()
+                            infoView.updateChecker.checkNow()
                             checkUpdatesBusy.restart()
                         }
                     }
@@ -146,7 +147,7 @@ ScrollableColumn {
             PlasmaComponents.ToolTip.visible: hovered
             PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
             onClicked: {
-                Plasmoid.configuration.favoritesPortedToKAstats = false
+                infoView.markUnported()
                 migrateHintTimer.start()
             }
         }

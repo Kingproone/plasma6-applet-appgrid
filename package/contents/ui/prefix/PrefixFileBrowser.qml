@@ -7,13 +7,14 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.plasmoid
 
 PlasmaComponents.ScrollView {
     id: fileBrowser
 
     property string path: ""
     property Item searchField: null
+    // listDirectory(path) -> list of { name, path, icon, isDir }, injected.
+    required property var listDirectory
 
     signal fileOpened()
     signal directoryNavigated(string path)
@@ -38,7 +39,7 @@ PlasmaComponents.ScrollView {
         model: ListModel { id: fileModel }
 
         function refresh() {
-            var items = Plasmoid.listDirectory(fileBrowser.path)
+            var items = fileBrowser.listDirectory(fileBrowser.path)
             fileModel.clear()
             for (var i = 0; i < items.length; i++)
                 fileModel.append(items[i])

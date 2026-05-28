@@ -134,6 +134,8 @@ PlasmoidItem {
             launchAppAction: function(sid, idx) { Plasmoid.launchAppAction(sid, idx) }
             canManageInDiscover: function(sid) { return Plasmoid.canManageInDiscover(sid) }
             openInDiscover: function(sid) { Plasmoid.openInDiscover(sid) }
+            listDirectory: function(path) { return Plasmoid.listDirectory(path) }
+            sysInfo: Plasmoid.systemInfo()
         }
     }
 }

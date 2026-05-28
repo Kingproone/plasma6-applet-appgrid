@@ -46,6 +46,8 @@ Window {
     required property var launchAppAction
     required property var canManageInDiscover
     required property var openInDiscover
+    required property var listDirectory
+    required property var sysInfo
 
     readonly property real panelShadowMargin: Kirigami.Units.gridUnit * 2
 
@@ -349,6 +351,8 @@ Window {
         launchAppAction: root.launchAppAction
         canManageInDiscover: root.canManageInDiscover
         openInDiscover: root.openInDiscover
+        listDirectory: root.listDirectory
+        sysInfo: root.sysInfo
         // Static user offset + compact-mode downward shift, kept out of
         // the anchor system so the open/close animations (which drive
         // anchors.verticalCenterOffset) are unaffected.

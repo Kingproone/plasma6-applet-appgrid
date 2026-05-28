@@ -7,12 +7,15 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.components as PlasmaComponents
-import org.kde.plasma.plasmoid
 
 ColumnLayout {
     id: hiddenView
 
-    readonly property var hiddenApps: Plasmoid.appsModel ? Plasmoid.appsModel.hiddenApps : []
+    required property var appsModel
+    // setHiddenApps(list) persists the hidden-apps list at the boundary.
+    required property var setHiddenApps
+
+    readonly property var hiddenApps: appsModel ? appsModel.hiddenApps : []
 
     anchors.fill: parent
     anchors.margins: Kirigami.Units.largeSpacing * 2
@@ -34,8 +37,8 @@ ColumnLayout {
             icon.name: "edit-undo"
             text: i18nd("dev.xarbit.appgrid", "Unhide All")
             onClicked: {
-                Plasmoid.appsModel.hiddenApps = []
-                Plasmoid.configuration.hiddenApps = []
+                hiddenView.appsModel.hiddenApps = []
+                hiddenView.setHiddenApps([])
             }
         }
     }
@@ -91,7 +94,7 @@ ColumnLayout {
                 width: hiddenList.width
                 height: Kirigami.Units.iconSizes.medium + Kirigami.Units.smallSpacing * 2
 
-                property var appInfo: Plasmoid.appsModel ? Plasmoid.appsModel.getByStorageId(modelData) : ({})
+                property var appInfo: hiddenView.appsModel ? hiddenView.appsModel.getByStorageId(modelData) : ({})
 
                 contentItem: RowLayout {
                     spacing: Kirigami.Units.largeSpacing
@@ -128,8 +131,8 @@ ColumnLayout {
                         PlasmaComponents.ToolTip.visible: hovered
                         PlasmaComponents.ToolTip.delay: Kirigami.Units.toolTipDelay
                         onClicked: {
-                            Plasmoid.appsModel.unhideApp(modelData)
-                            Plasmoid.configuration.hiddenApps = Plasmoid.appsModel.hiddenApps
+                            hiddenView.appsModel.unhideApp(modelData)
+                            hiddenView.setHiddenApps(hiddenView.appsModel.hiddenApps)
                         }
                     }
                 }

@@ -68,6 +68,10 @@ Kirigami.ShadowedRectangle {
     required property var canManageInDiscover
     required property var openInDiscover
 
+    // Plasmoid C++ invokables/snapshots, forwarded to the prefix views.
+    required property var listDirectory
+    required property var sysInfo
+
     // -- Configuration (single source of truth for all config reads) --
     ConfigCache { id: cfg; source: panel.configuration }
     readonly property alias columns: cfg.gridColumns
@@ -685,6 +689,14 @@ Kirigami.ShadowedRectangle {
             searchField: searchBar.field
             sharedFavoritesModel: panel.sharedFavoritesModel
             showScrollbars: cfg.showScrollbars
+            appsModel: panel.appsModel
+            setHiddenApps: function(list) { panel.configuration.hiddenApps = list }
+            listDirectory: panel.listDirectory
+            sysInfo: panel.sysInfo
+            updateChecker: panel.updateChecker
+            favoritesPortedToKAstats: cfg.favoritesPortedToKAstats
+            favoriteApps: cfg.favoriteApps
+            markUnported: function() { panel.configuration.favoritesPortedToKAstats = false }
             onFileOpened: panel.closeRequested()
             onDirectoryNavigated: function(path) {
                 searchBar.text = path

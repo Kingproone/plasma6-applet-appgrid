@@ -23,6 +23,16 @@ Item {
     property var sharedFavoritesModel: null
     required property bool showScrollbars
 
+    // Per-mode dependencies, forwarded to the individual prefix views.
+    required property var appsModel
+    required property var setHiddenApps
+    required property var listDirectory
+    required property var sysInfo
+    required property var updateChecker
+    required property bool favoritesPortedToKAstats
+    required property list<string> favoriteApps
+    required property var markUnported
+
     signal fileOpened()
     signal directoryNavigated(string path)
 
@@ -48,12 +58,20 @@ Item {
         anchors.fill: parent
         visible: prefixView.mode === "info"
         sharedFavoritesModel: prefixView.sharedFavoritesModel
+        showScrollbars: prefixView.showScrollbars
+        sysInfo: prefixView.sysInfo
+        updateChecker: prefixView.updateChecker
+        favoritesPortedToKAstats: prefixView.favoritesPortedToKAstats
+        favoriteApps: prefixView.favoriteApps
+        markUnported: prefixView.markUnported
     }
 
     // -- Hidden apps --
     Prefix.PrefixHiddenView {
         anchors.fill: parent
         visible: prefixView.mode === "hidden"
+        appsModel: prefixView.appsModel
+        setHiddenApps: prefixView.setHiddenApps
     }
 
     // -- File browser --
@@ -63,6 +81,7 @@ Item {
         visible: prefixView.mode === "files"
         path: prefixView.argument
         searchField: prefixView.searchField
+        listDirectory: prefixView.listDirectory
         onFileOpened: prefixView.fileOpened()
         onDirectoryNavigated: function(path) { prefixView.directoryNavigated(path) }
     }
