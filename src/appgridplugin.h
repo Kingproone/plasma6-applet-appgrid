@@ -46,15 +46,15 @@ class AppGridPlugin : public Plasma::Applet
 public:
     AppGridPlugin(QObject *parent, const KPluginMetaData &data, const QVariantList &args);
 
-    AppFilterModel *appsModel() const;
-    QAbstractItemModel *runnerModel() const;
-    KRunner::ResultsModel *runnerSourceModel() const;
-    UnifiedSearchModel *searchModel() const;
-    bool isUniversalBuild() const;
+    [[nodiscard]] AppFilterModel *appsModel() const;
+    [[nodiscard]] QAbstractItemModel *runnerModel() const;
+    [[nodiscard]] KRunner::ResultsModel *runnerSourceModel() const;
+    [[nodiscard]] UnifiedSearchModel *searchModel() const;
+    [[nodiscard]] bool isUniversalBuild() const;
 #ifdef APPGRID_UNIVERSAL_BUILD
-    UpdateChecker *updateChecker() const;
+    [[nodiscard]] UpdateChecker *updateChecker() const;
 #endif
-    bool isWayland() const;
+    [[nodiscard]] bool isWayland() const;
 
     // --- Window management ---
 
@@ -114,13 +114,13 @@ public:
 
     /** True if KDE Discover is installed. Standalone check; per-app
      *  manageability is queried separately via canManageInDiscover. */
-    Q_INVOKABLE bool isDiscoverAvailable() const;
+    [[nodiscard]] Q_INVOKABLE bool isDiscoverAvailable() const;
 
     /** True if Discover has a backend that can manage the specified
      *  app (currently PackageKit for native packages, Flatpak for
      *  Flatpak apps). Used to gate the "Manage in Discover" menu item
      *  so it only appears for apps Discover will actually open. */
-    Q_INVOKABLE bool canManageInDiscover(const QString &storageId) const;
+    [[nodiscard]] Q_INVOKABLE bool canManageInDiscover(const QString &storageId) const;
 
     /** Open KDE Discover focused on the application identified by
      *  @p storageId via the appstream:// URL scheme. */
@@ -140,8 +140,8 @@ protected:
 private:
     // --- Platform-specific window helpers ---
 
-    QScreen *screenForCursor() const;
-    QScreen *screenForPanel() const;
+    [[nodiscard]] QScreen *screenForCursor() const;
+    [[nodiscard]] QScreen *screenForPanel() const;
 
     void configureWayland(QWindow *window);
 #ifdef APPGRID_X11_SUPPORT

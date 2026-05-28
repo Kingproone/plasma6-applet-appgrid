@@ -49,10 +49,10 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    int appResultCount() const;
-    int runnerResultCount() const;
+    [[nodiscard]] int appResultCount() const;
+    [[nodiscard]] int runnerResultCount() const;
 
-    Q_INVOKABLE QVariantMap get(int row) const;
+    [[nodiscard]] Q_INVOKABLE QVariantMap get(int row) const;
 
 private Q_SLOTS:
     void onSourceChanged();

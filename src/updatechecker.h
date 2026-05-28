@@ -30,19 +30,19 @@ public:
     explicit UpdateChecker(const QString &currentVersion, QObject *parent = nullptr);
     ~UpdateChecker() override;
 
-    bool hasUpdate() const
+    [[nodiscard]] bool hasUpdate() const
     {
         return m_hasUpdate;
     }
-    QString latestVersion() const
+    [[nodiscard]] QString latestVersion() const
     {
         return m_latestVersion;
     }
-    QString releaseUrl() const
+    [[nodiscard]] QString releaseUrl() const
     {
         return m_releaseUrl;
     }
-    bool enabled() const
+    [[nodiscard]] bool enabled() const
     {
         return m_enabled;
     }
@@ -52,9 +52,9 @@ public:
     Q_INVOKABLE void openReleasePage();
 
     // Pure helpers — public for unit testing.
-    static bool isNewer(const QString &candidate, const QString &current);
-    static bool isAllowedReleaseScheme(const class QUrl &url);
-    static bool isValidVersionString(const QString &v);
+    [[nodiscard]] static bool isNewer(const QString &candidate, const QString &current);
+    [[nodiscard]] static bool isAllowedReleaseScheme(const class QUrl &url);
+    [[nodiscard]] static bool isValidVersionString(const QString &v);
 
     // Decoded latest.json. `valid` is true when the JSON parsed and the
     // mandatory stable version cleared validation; the prerelease pair
@@ -66,7 +66,7 @@ public:
         QString prereleaseVersion;
         QString prereleaseUrl;
     };
-    static ManifestResult parseManifest(const QByteArray &bytes);
+    [[nodiscard]] static ManifestResult parseManifest(const QByteArray &bytes);
 
 Q_SIGNALS:
     void hasUpdateChanged();

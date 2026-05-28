@@ -31,6 +31,7 @@ struct AppEntry {
 class AppModel : public QAbstractListModel
 {
     Q_OBJECT
+    Q_PROPERTY(bool useSystemCategories READ useSystemCategories WRITE setUseSystemCategories NOTIFY useSystemCategoriesChanged)
 
 public:
     enum Roles {
@@ -53,16 +54,15 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     Q_INVOKABLE void launch(int index);
-    Q_INVOKABLE QStringList categories() const;
-    Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
+    [[nodiscard]] Q_INVOKABLE QStringList categories() const;
+    [[nodiscard]] Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
 
     // Pure helpers — testable without constructing the model.
-    static QString detectInstallSource(const QString &exec, const QString &resolvedPath);
-    static QStringList mapCategories(const QStringList &categories);
+    [[nodiscard]] static QString detectInstallSource(const QString &exec, const QString &resolvedPath);
+    [[nodiscard]] static QStringList mapCategories(const QStringList &categories);
 
-    bool useSystemCategories() const;
+    [[nodiscard]] bool useSystemCategories() const;
     void setUseSystemCategories(bool enabled);
-    Q_PROPERTY(bool useSystemCategories READ useSystemCategories WRITE setUseSystemCategories NOTIFY useSystemCategoriesChanged)
 
 signals:
     void useSystemCategoriesChanged();

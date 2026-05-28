@@ -50,39 +50,39 @@ public:
 
     explicit AppFilterModel(QObject *parent = nullptr);
 
-    QString filterCategory() const;
+    [[nodiscard]] QString filterCategory() const;
     void setFilterCategory(const QString &category);
 
-    QString searchText() const;
+    [[nodiscard]] QString searchText() const;
     void setSearchText(const QString &text);
 
-    int count() const;
+    [[nodiscard]] int count() const;
 
-    QStringList hiddenApps() const;
+    [[nodiscard]] QStringList hiddenApps() const;
     void setHiddenApps(const QStringList &list);
 
-    QStringList favoriteApps() const;
+    [[nodiscard]] QStringList favoriteApps() const;
     void setFavoriteApps(const QStringList &list);
 
-    QStringList recentApps() const;
+    [[nodiscard]] QStringList recentApps() const;
     void setRecentApps(const QStringList &list);
 
-    int maxRecentApps() const;
+    [[nodiscard]] int maxRecentApps() const;
     void setMaxRecentApps(int max);
 
-    int sortMode() const;
+    [[nodiscard]] int sortMode() const;
     void setSortMode(int mode);
 
-    QVariantMap launchCountsMap() const;
+    [[nodiscard]] QVariantMap launchCountsMap() const;
     void setLaunchCountsMap(const QVariantMap &map);
 
-    QStringList knownApps() const;
+    [[nodiscard]] QStringList knownApps() const;
     void setKnownApps(const QStringList &list);
 
-    bool showFavoritesOnly() const;
+    [[nodiscard]] bool showFavoritesOnly() const;
     void setShowFavoritesOnly(bool enabled);
 
-    bool useSystemCategories() const;
+    [[nodiscard]] bool useSystemCategories() const;
     void setUseSystemCategories(bool enabled);
 
     Q_INVOKABLE void launch(int proxyIndex);
@@ -92,34 +92,34 @@ public:
     // without triggering KIO::ApplicationLauncherJob.
     Q_INVOKABLE void recordRecentLaunch(const QString &storageId);
 
-    QStringList defaultApps() const;
+    [[nodiscard]] QStringList defaultApps() const;
     void setDefaultApps(const QStringList &list);
     // Load defaults from system + user mimeapps.list and update m_defaultApps.
     Q_INVOKABLE void reloadDefaultApps();
 
     // Pure parser: extract storage IDs from the [Default Applications]
     // section of a mimeapps.list file. Empty list on missing/invalid file.
-    static QStringList parseMimeAppsDefaults(const QString &filePath);
-    Q_INVOKABLE QStringList categories() const;
-    Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
-    Q_INVOKABLE QVariantMap get(int proxyRow) const;
+    [[nodiscard]] static QStringList parseMimeAppsDefaults(const QString &filePath);
+    [[nodiscard]] Q_INVOKABLE QStringList categories() const;
+    [[nodiscard]] Q_INVOKABLE QString categoryMenuPath(const QString &category) const;
+    [[nodiscard]] Q_INVOKABLE QVariantMap get(int proxyRow) const;
     Q_INVOKABLE void hideApp(int proxyIndex);
     // Hide by storageId — needed for bulk hide where the proxy index of
     // earlier sids in the batch would shift as each hide invalidates the
     // filter. Idempotent: re-hiding an already-hidden sid is a no-op.
     Q_INVOKABLE void hideByStorageId(const QString &storageId);
     Q_INVOKABLE void unhideApp(const QString &storageId);
-    Q_INVOKABLE bool isFavorite(const QString &storageId) const;
-    Q_INVOKABLE bool isRecent(const QString &storageId) const;
+    [[nodiscard]] Q_INVOKABLE bool isFavorite(const QString &storageId) const;
+    [[nodiscard]] Q_INVOKABLE bool isRecent(const QString &storageId) const;
 
-    bool sortFavoritesAlphabetically() const;
+    [[nodiscard]] bool sortFavoritesAlphabetically() const;
     void setSortFavoritesAlphabetically(bool enabled);
-    Q_INVOKABLE QVariantMap getByStorageId(const QString &storageId) const;
-    Q_INVOKABLE bool isNewApp(const QString &storageId) const;
-    Q_INVOKABLE QVariantList appsByCategory() const;
-    Q_INVOKABLE QStringList nonEmptyCategories() const;
+    [[nodiscard]] Q_INVOKABLE QVariantMap getByStorageId(const QString &storageId) const;
+    [[nodiscard]] Q_INVOKABLE bool isNewApp(const QString &storageId) const;
+    [[nodiscard]] Q_INVOKABLE QVariantList appsByCategory() const;
+    [[nodiscard]] Q_INVOKABLE QStringList nonEmptyCategories() const;
     Q_INVOKABLE void markAllKnown();
-    Q_INVOKABLE int getLaunchCount(const QString &storageId) const;
+    [[nodiscard]] Q_INVOKABLE int getLaunchCount(const QString &storageId) const;
 
 signals:
     void defaultAppsChanged();
@@ -152,7 +152,7 @@ private:
     void invalidateStorageIdCache();
     void ensureStorageIdCache() const;
     void invalidateHaystackCache();
-    QString ensureHaystack(int sourceRow) const;
+    [[nodiscard]] QString ensureHaystack(int sourceRow) const;
 
     QString m_filterCategory;
     QString m_searchText;

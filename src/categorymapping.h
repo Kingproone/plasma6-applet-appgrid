@@ -16,10 +16,10 @@
  *
  * The lookup table is built once on first call.
  */
-QString mapCategoryToken(const QString &token);
+[[nodiscard]] QString mapCategoryToken(const QString &token);
 
 /**
  * Direct read access to the lookup table for unit tests.
  * Returns a reference to the static map.
  */
-const QHash<QString, QString> &categoryMap();
+[[nodiscard]] const QHash<QString, QString> &categoryMap();
