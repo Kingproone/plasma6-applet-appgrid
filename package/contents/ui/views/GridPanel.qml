@@ -15,6 +15,7 @@ import org.kde.plasma.components as PlasmaComponents
 import "../controllers"
 import "../widgets"
 import "../js/migrations.js" as Migrations
+import "../js/searchresultnav.js" as SearchResultNav
 
 Kirigami.ShadowedRectangle {
     id: panel
@@ -543,17 +544,17 @@ Kirigami.ShadowedRectangle {
                         }
                     }
                 }
-                function navigateToResults() {
+                readonly property int resultNavPrevious: -1
+                readonly property int resultNavNext: 1
+                function navigateToResults(step, wrap) {
                     if (panel.isSearching && !panel.isPrefixMode) {
-                        if (searchResultsList.count > 1) {
-                            searchResultsList.forceActiveFocus()
-                            // Respect a hover-set position; otherwise skip the
-                            // default top row so Down advances visibly.
-                            if (searchResultsList.currentIndex <= 0)
-                                searchResultsList.currentIndex = 1
-                        } else if (searchResultsList.count === 1) {
-                            searchResultsList.forceActiveFocus()
-                        }
+                        const next = SearchResultNav.nextIndex(
+                            searchResultsList.currentIndex,
+                            searchResultsList.count,
+                            step,
+                            wrap === true)
+                        if (next !== searchResultsList.currentIndex)
+                            searchResultsList.currentIndex = next
                     } else if (panel.showCategoryGrid) {
                         categoryGridView.forceActiveFocus()
                         if (categoryGridView.currentIndex < 0) {
@@ -585,14 +586,18 @@ Kirigami.ShadowedRectangle {
                         panel._gridRevealed = true
                         return
                     }
-                    navigateToResults()
+                    navigateToResults(resultNavNext)
                 }
                 onMoveUp: {
+                    if (panel.isSearching && !panel.isPrefixMode) {
+                        navigateToResults(resultNavPrevious)
+                        return
+                    }
                     if (panel.cfgHideGridWhenEmpty && panel._gridRevealed
                         && !panel.isSearching)
                         panel._gridRevealed = false
                 }
-                onTabPressed: navigateToResults()
+                onTabPressed: navigateToResults(resultNavNext, true)
                 onPageUp: if (panel.showSearchResults) searchResultsList.pageUp()
                 onPageDown: if (panel.showSearchResults) searchResultsList.pageDown()
                 onHome: if (panel.showSearchResults) searchResultsList.goHome()
