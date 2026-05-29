@@ -14,7 +14,7 @@ import "views"
 import "js/migrations.js" as Migrations
 
 PlasmoidItem {
-    id: kicker
+    id: appgrid
 
     compactRepresentation: compactRepresentationComponent
     fullRepresentation: Item {}
@@ -43,7 +43,7 @@ PlasmoidItem {
     }
     Connections {
         target: Plasmoid.configuration
-        function onCheckForUpdatesChanged() { kicker._syncUpdateChecker() }
+        function onCheckForUpdatesChanged() { appgrid._syncUpdateChecker() }
     }
     function _syncUpdateChecker() {
         if (Plasmoid.updateChecker)
@@ -56,14 +56,14 @@ PlasmoidItem {
             formFactor: Plasmoid.formFactor
             title: Plasmoid.title
             configuration: Plasmoid.configuration
-            onActivated: kicker.toggleWindow()
-            onPreloadRequested: kicker.preloadWindow()
+            onActivated: appgrid.toggleWindow()
+            onPreloadRequested: appgrid.preloadWindow()
         }
     }
 
     Connections {
         target: Plasmoid
-        function onActivated() { kicker.toggleWindow() }
+        function onActivated() { appgrid.toggleWindow() }
     }
 
 
@@ -93,7 +93,7 @@ PlasmoidItem {
         if (gridWindow || _gridWindowIncubator)
             return
         const incubator = gridWindowComponent.incubateObject(
-            kicker, { appletInterface: kicker }, Qt.Asynchronous)
+            appgrid, { appletInterface: appgrid }, Qt.Asynchronous)
         if (incubator.status === Component.Ready) {
             gridWindow = incubator.object
             return
@@ -101,8 +101,8 @@ PlasmoidItem {
         _gridWindowIncubator = incubator
         incubator.onStatusChanged = function(status) {
             if (status === Component.Ready) {
-                kicker.gridWindow = incubator.object
-                kicker._gridWindowIncubator = null
+                appgrid.gridWindow = incubator.object
+                appgrid._gridWindowIncubator = null
             }
         }
     }

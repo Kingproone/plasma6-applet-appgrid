@@ -14,7 +14,7 @@ import "views" as Views
 import "js/migrations.js" as Migrations
 
 PlasmoidItem {
-    id: kicker
+    id: appgrid
 
     compactRepresentation: compactRepresentationComponent
     fullRepresentation: fullRepresentationComponent
@@ -38,7 +38,7 @@ PlasmoidItem {
     }
     Connections {
         target: Plasmoid.configuration
-        function onCheckForUpdatesChanged() { kicker._syncUpdateChecker() }
+        function onCheckForUpdatesChanged() { appgrid._syncUpdateChecker() }
     }
     function _syncUpdateChecker() {
         if (Plasmoid.updateChecker)
@@ -64,7 +64,7 @@ PlasmoidItem {
         Views.GridPanel {
             id: panel
             nativePopup: true
-            appletInterface: kicker
+            appletInterface: appgrid
             appsModel: Plasmoid.appsModel
             searchModel: Plasmoid.searchModel
             runnerSourceModel: Plasmoid.runnerSourceModel
@@ -82,12 +82,12 @@ PlasmoidItem {
             listDirectory: function(path) { return Plasmoid.listDirectory(path) }
             sysInfo: Plasmoid.systemInfo()
             opacity: 1.0
-            onCloseRequested: kicker.expanded = false
+            onCloseRequested: appgrid.expanded = false
 
             Connections {
-                target: kicker
+                target: appgrid
                 function onExpandedChanged() {
-                    if (kicker.expanded) {
+                    if (appgrid.expanded) {
                         panel.resetState()
                         if (Plasmoid.configuration.shakeOnOpen)
                             panel.shakeAllIcons()
@@ -99,7 +99,7 @@ PlasmoidItem {
 
             Shortcut {
                 sequence: "Escape"
-                onActivated: kicker.expanded = false
+                onActivated: appgrid.expanded = false
             }
         }
     }
