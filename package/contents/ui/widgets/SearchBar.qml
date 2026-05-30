@@ -27,6 +27,13 @@ RowLayout {
     signal altNumberPressed(int number)
     signal altLetterPressed(int key)
 
+    // Empties the field and returns focus to it. Single entry point so the
+    // clear button and the Escape shortcut stay in lock-step.
+    function clear() {
+        textField.text = ""
+        textField.forceActiveFocus()
+    }
+
     Layout.fillWidth: true
     spacing: Kirigami.Units.smallSpacing
 
@@ -84,10 +91,7 @@ RowLayout {
             icon.name: "edit-clear"
             icon.width: Kirigami.Units.iconSizes.small
             icon.height: Kirigami.Units.iconSizes.small
-            onClicked: {
-                textField.text = ""
-                textField.forceActiveFocus()
-            }
+            onClicked: searchBar.clear()
             Accessible.name: i18nd("dev.xarbit.appgrid", "Clear search")
         }
     }

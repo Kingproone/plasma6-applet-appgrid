@@ -9,6 +9,7 @@ license=('GPL-2.0-or-later')
 provides=('appgrid')
 conflicts=('appgrid')
 replaces=('appgrid')
+options=('!debug' 'lto')
 depends=(
     'plasma-workspace'
     'kservice'
@@ -41,7 +42,8 @@ pkgver() {
 build() {
     cmake -B build -S "$startdir" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_PREFIX=/usr
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
     cmake --build build -j$(nproc)
 }
 
