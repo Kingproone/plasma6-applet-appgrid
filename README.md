@@ -28,7 +28,7 @@ Built, signed, and published by the AppGrid maintainer. These are the channels s
 | **Ubuntu 25.10+** (Launchpad PPA) | `sudo add-apt-repository ppa:xarbit/plasma-applet-appgrid && sudo apt install plasma-applet-appgrid` |
 | **Fedora** (Copr) | `sudo dnf copr enable scujas/plasma-applet-appgrid && sudo dnf install plasma-applet-appgrid` |
 | **Immutable distros** (KDE Linux, Kinoite, Bazzite, Aurora, Kalpa, SteamOS) | Universal `~/.local/` tarball — see [INSTALL.TXT](packaging/universal/INSTALL.TXT) |
-| **Nix / NixOS** | Flake — see [packaging/nix/README.md](packaging/nix/README.md) |
+| **Nix / NixOS** | See [packaging/nix/README.md](packaging/nix/README.md) |
 
 After install: right-click the panel launcher → **Show Alternatives** → **AppGrid**.
 
